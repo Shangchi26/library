@@ -3,7 +3,6 @@ include 'db_connect.php';
 
 if (isset($_GET['search_title']) || isset($_GET['search_year'])) {
     $search_title = isset($_GET['search_title']) ? $_GET['search_title'] : '';
-    $search_year = isset($_GET['search_year']) ? $_GET['search_year'] : '';
 
     $sql = "SELECT * FROM books WHERE 1";
     $params = array();
@@ -13,17 +12,12 @@ if (isset($_GET['search_title']) || isset($_GET['search_year'])) {
         $params[':search_title'] = '%' . $search_title . '%';
     }
 
-    if (!empty($search_year)) {
-        $sql .= " AND pub_year = :search_year";
-        $params[':search_year'] = $search_year;
-    }
-
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        die("Lỗi truy vấn cơ sở dữ liệu: " . $e->getMessage());
+        die("error: " . $e->getMessage());
     }
 } else {
     try {
@@ -31,7 +25,7 @@ if (isset($_GET['search_title']) || isset($_GET['search_year'])) {
         $stmt->execute();
         $books = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        die("Lỗi truy vấn cơ sở dữ liệu: " . $e->getMessage());
+        die("error: " . $e->getMessage());
     }
 }
 ?>
@@ -39,28 +33,30 @@ if (isset($_GET['search_title']) || isset($_GET['search_year'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quản lý sách</title>
+    <title>FPT APTECH Library</title>
 </head>
 <body>
-    <h1>Danh sách sách</h1>
+    <h1>List Book</h1>
 
     <form action="index.php" method="GET">
-        <label for="search_title">Tìm kiếm theo tiêu đề:</label>
-        <input type="text" name="search_title" id="search_title" placeholder="Nhập tiêu đề">
+        <label for="search_title">Search book by name</label>
+        <input type="text" name="search_title" id="search_title" placeholder="Enter Name">
 
-        <label for="search_year">Tìm kiếm theo năm xuất bản:</label>
-        <input type="text" name="search_year" id="search_year" placeholder="Nhập năm xuất bản">
-
-        <input type="submit" value="Tìm kiếm">
+        <input type="submit" value="Search">
+         <?php
+        if (isset($_GET['search_title'])) {
+            echo '<a href="index.php" class="view-all-button">View All Books</a>';
+        }
+        ?>
     </form>
 
     <table>
         <tr>
-            <th>Tên</th>
-            <th>Tác giả</th>
+            <th>Title</th>
+            <th>Author</th>
             <th>ISBN</th>
-            <th>Năm xuất bản</th>
-            <th>Trạng thái</th>
+            <th>Year</th>
+            <th>Status</th>
         </tr>
         <?php
 if (isset($result) && !empty($result)) {
@@ -70,7 +66,7 @@ if (isset($result) && !empty($result)) {
         echo "<td>" . $book['authorid'] . "</td>";
         echo "<td>" . $book['ISBN'] . "</td>";
         echo "<td>" . $book['pub_year'] . "</td>";
-        echo "<td>" . ($book['available'] ? 'Có sẵn' : 'Không có sẵn') . "</td>";
+        echo "<td>" . ($book['available'] ? 'true' : 'false') . "</td>";
         echo "</tr>";
     }
 } else {
@@ -80,7 +76,7 @@ if (isset($result) && !empty($result)) {
         echo "<td>" . $book['authorid'] . "</td>";
         echo "<td>" . $book['ISBN'] . "</td>";
         echo "<td>" . $book['pub_year'] . "</td>";
-        echo "<td>" . ($book['available'] ? 'Có sẵn' : 'Không có sẵn') . "</td>";
+        echo "<td>" . ($book['available'] ? 'true' : 'false') . "</td>";
         echo "</tr>";
     }
 }
@@ -124,6 +120,15 @@ input[type="submit"] {
     border: none;
     padding: 10px 20px;
     cursor: pointer;
+}
+
+.view-all-button {
+    display: inline-block;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    margin-left: 10px;
 }
 
 table {
